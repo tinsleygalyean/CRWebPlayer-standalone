@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "@splidejs/splide": "^4.1.4",
-    "@types/firebase": "^3.2.1",
     "html-webpack-plugin": "^5.5.0",
     "jszip": "^3.10.1",
     "typescript": "^5.0.0",
