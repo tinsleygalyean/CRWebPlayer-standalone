@@ -60,27 +60,33 @@ function addDirToZip(zip, srcDir, zipPath) {
   return count;
 }
 
-/** Language display names (best-effort — extend as needed) */
+/**
+ * Language display names (best-effort — extend as needed).
+ *
+ * Keys here are FTM slugs (Feed The Monster's on-device language codes), kept
+ * for back-compat with installed devices. The `en` / `native` display strings
+ * still use the linguistically correct names (e.g. slug `zulu` → display `isiZulu`).
+ */
 const LANG_DISPLAY_NAMES = {
-  english:           { en: 'English',           native: 'English' },
-  hindi:             { en: 'Hindi',              native: 'हिन्दी' },
-  swahili:           { en: 'Swahili',            native: 'Kiswahili' },
-  french:            { en: 'French',             native: 'Français' },
-  luganda:           { en: 'Luganda',            native: 'Luganda' },
-  nepali:            { en: 'Nepali',             native: 'नेपाली' },
-  ukrainian:         { en: 'Ukrainian',          native: 'Українська' },
-  isizulu:           { en: 'isiZulu',            native: 'isiZulu' },
-  bangla:            { en: 'Bangla',             native: 'বাংলা' },
-  marathi:           { en: 'Marathi',            native: 'मराठी' },
-  hausa:             { en: 'Hausa',              native: 'Hausa' },
-  wolof:             { en: 'Wolof',              native: 'Wolof' },
-  pashto:            { en: 'Pashto',             native: 'پښتو' },
-  amharic:           { en: 'Amharic',            native: 'አማርኛ' },
-  oromo:             { en: 'Oromo',              native: 'Afaan Oromoo' },
-  somali:            { en: 'Somali',             native: 'Soomaali' },
-  tigrinya:          { en: 'Tigrinya',           native: 'ትግርኛ' },
-  cvportuguese:      { en: 'Cape Verdean Portuguese', native: 'Português Cabo-verdiano' },
-  cvkreole:          { en: 'Cape Verdean Creole',     native: 'Kriolu Kabuverdianu' },
+  english:              { en: 'English',           native: 'English' },
+  hindi:                { en: 'Hindi',              native: 'हिन्दी' },
+  swahili:              { en: 'Swahili',            native: 'Kiswahili' },
+  french:               { en: 'French',             native: 'Français' },
+  lugandan:             { en: 'Luganda',            native: 'Luganda' },
+  nepali:               { en: 'Nepali',             native: 'नेपाली' },
+  ukrainian:            { en: 'Ukrainian',          native: 'Українська' },
+  zulu:                 { en: 'isiZulu',            native: 'isiZulu' },
+  bangla:               { en: 'Bangla',             native: 'বাংলা' },
+  marathi:              { en: 'Marathi',            native: 'मराठी' },
+  hausa:                { en: 'Hausa',              native: 'Hausa' },
+  wolof:                { en: 'Wolof',              native: 'Wolof' },
+  pashto:               { en: 'Pashto',             native: 'پښتو' },
+  amharic:              { en: 'Amharic',            native: 'አማርኛ' },
+  oromo:                { en: 'Oromo',              native: 'Afaan Oromoo' },
+  somali:               { en: 'Somali',             native: 'Soomaali' },
+  tigragna:             { en: 'Tigrinya',           native: 'ትግርኛ' },
+  caboverdeportuguese:  { en: 'Cape Verdean Portuguese', native: 'Português Cabo-verdiano' },
+  caboverdecreole:      { en: 'Cape Verdean Creole',     native: 'Kriolu Kabuverdianu' },
 };
 
 // ── main ──────────────────────────────────────────────────────────────────────

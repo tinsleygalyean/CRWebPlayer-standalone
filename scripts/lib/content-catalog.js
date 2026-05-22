@@ -5,7 +5,16 @@
  *
  * Rules:
  *  - bookSlug: lowercase ASCII, dashes only, stable forever
- *  - langCode:  reuses codes from assets/standalone-games/languages.json where possible
+ *  - langCode: must match Feed The Monster's existing on-device slugs so cached
+ *    content survives across releases. Where the FTM spelling differs from the
+ *    more standard linguistic form, the FTM spelling wins for back-compat.
+ *
+ * Canonical (linguistic) name  →  FTM slug used here:
+ *   Cape Verdean Creole         →  caboverdecreole       (was 'cvkreole')
+ *   Cape Verdean Portuguese     →  caboverdeportuguese   (was 'cvportuguese')
+ *   isiZulu                     →  zulu                  (was 'isizulu')
+ *   Luganda                     →  lugandan              (was 'luganda')
+ *   Tigrinya                    →  tigragna              (was 'tigrinya')
  *
  * Flagged duplicates (two source dirs map to the same target) are noted inline.
  * The catalog is the single source of truth for the build scripts.
@@ -16,21 +25,21 @@ const CATALOG = [
   { dir: 'BeeandElephantPashto',          bookSlug: 'the-bee-and-the-elephant', langCode: 'pashto' },
   { dir: 'TheBeeAndTheElephantEnLv4',     bookSlug: 'the-bee-and-the-elephant', langCode: 'english' },
   { dir: 'TheBeeAndTheElephantHindiLv4',  bookSlug: 'the-bee-and-the-elephant', langCode: 'hindi' },
-  { dir: 'TheBeeAndTheElephantIsiZuluLv4',bookSlug: 'the-bee-and-the-elephant', langCode: 'isizulu' },
-  { dir: 'TheBeeAndTheElephantLugLv4',    bookSlug: 'the-bee-and-the-elephant', langCode: 'luganda' },
+  { dir: 'TheBeeAndTheElephantIsiZuluLv4',bookSlug: 'the-bee-and-the-elephant', langCode: 'zulu' },
+  { dir: 'TheBeeAndTheElephantLugLv4',    bookSlug: 'the-bee-and-the-elephant', langCode: 'lugandan' },
   { dir: 'TheBeeAndTheElephantNepLv4',    bookSlug: 'the-bee-and-the-elephant', langCode: 'nepali' },
   { dir: 'TheBeeAndTheElephantUkrLv6',    bookSlug: 'the-bee-and-the-elephant', langCode: 'ukrainian' },
   { dir: 'TheBeeAndTheElephantWolofLv4',  bookSlug: 'the-bee-and-the-elephant', langCode: 'wolof' },
 
   // ── Chaku's Cycle ───────────────────────────────────────────────────────────
   { dir: 'ChakusCycleBangla',             bookSlug: 'chakus-cycle', langCode: 'bangla' },
-  { dir: 'ChakusCycleCVCreole',           bookSlug: 'chakus-cycle', langCode: 'cvkreole' },
-  { dir: 'ChakusCycleCVPortuguese',       bookSlug: 'chakus-cycle', langCode: 'cvportuguese' },
+  { dir: 'ChakusCycleCVCreole',           bookSlug: 'chakus-cycle', langCode: 'caboverdecreole' },
+  { dir: 'ChakusCycleCVPortuguese',       bookSlug: 'chakus-cycle', langCode: 'caboverdeportuguese' },
   { dir: 'ChakusCycleFrench',             bookSlug: 'chakus-cycle', langCode: 'french' },
   { dir: 'ChakusCycleHausa',              bookSlug: 'chakus-cycle', langCode: 'hausa' },
   { dir: 'ChakusCycleHindi',              bookSlug: 'chakus-cycle', langCode: 'hindi' },
-  { dir: 'ChakusCycleIsiZulu',            bookSlug: 'chakus-cycle', langCode: 'isizulu' },
-  { dir: 'ChakusCycleLuganda',            bookSlug: 'chakus-cycle', langCode: 'luganda' },
+  { dir: 'ChakusCycleIsiZulu',            bookSlug: 'chakus-cycle', langCode: 'zulu' },
+  { dir: 'ChakusCycleLuganda',            bookSlug: 'chakus-cycle', langCode: 'lugandan' },
   { dir: 'ChakusCycleMarathi',            bookSlug: 'chakus-cycle', langCode: 'marathi' },
   { dir: 'ChakusCycleNepali',             bookSlug: 'chakus-cycle', langCode: 'nepali' },
   { dir: 'ChakusCycleSwahili',            bookSlug: 'chakus-cycle', langCode: 'swahili' },
@@ -44,8 +53,8 @@ const CATALOG = [
   { dir: 'ColoursEnLv4',                  bookSlug: 'colours-level-4', langCode: 'english' },
   { dir: 'ColoursFrenchLv4',              bookSlug: 'colours-level-4', langCode: 'french' },
   { dir: 'ColoursHindiLv4',               bookSlug: 'colours-level-4', langCode: 'hindi' },
-  { dir: 'ColoursIsiZuluLv4',             bookSlug: 'colours-level-4', langCode: 'isizulu' },
-  { dir: 'ColoursLugLv4',                 bookSlug: 'colours-level-4', langCode: 'luganda' },
+  { dir: 'ColoursIsiZuluLv4',             bookSlug: 'colours-level-4', langCode: 'zulu' },
+  { dir: 'ColoursLugLv4',                 bookSlug: 'colours-level-4', langCode: 'lugandan' },
   { dir: 'ColoursNepLv4',                 bookSlug: 'colours-level-4', langCode: 'nepali' },
   { dir: 'ColoursPashto',                 bookSlug: 'colours-level-4', langCode: 'pashto' },
   { dir: 'ColoursUkrLv6',                 bookSlug: 'colours-level-4', langCode: 'ukrainian' },
@@ -61,14 +70,14 @@ const CATALOG = [
   { dir: 'ComeComeAmharic',               bookSlug: 'come-come', langCode: 'amharic' },
   { dir: 'ComeComeOromo',                 bookSlug: 'come-come', langCode: 'oromo' },
   { dir: 'ComeComeSomali',                bookSlug: 'come-come', langCode: 'somali' },
-  { dir: 'ComeComeTigirigna',             bookSlug: 'come-come', langCode: 'tigrinya' },
+  { dir: 'ComeComeTigirigna',             bookSlug: 'come-come', langCode: 'tigragna' },
 
   // ── Dad's Boots ─────────────────────────────────────────────────────────────
   { dir: 'DadsBootsFrench',               bookSlug: 'dads-boots', langCode: 'french' },
   { dir: 'DadsBootsHausa',                bookSlug: 'dads-boots', langCode: 'hausa' },
   { dir: 'DadsBootsHindi',                bookSlug: 'dads-boots', langCode: 'hindi' },
-  { dir: 'DadsBootsIsiZulu',              bookSlug: 'dads-boots', langCode: 'isizulu' },
-  { dir: 'DadsBootsLuganda',              bookSlug: 'dads-boots', langCode: 'luganda' },
+  { dir: 'DadsBootsIsiZulu',              bookSlug: 'dads-boots', langCode: 'zulu' },
+  { dir: 'DadsBootsLuganda',              bookSlug: 'dads-boots', langCode: 'lugandan' },
   { dir: 'DadsBootsMarathi',              bookSlug: 'dads-boots', langCode: 'marathi' },
   { dir: 'DadsBootsNepali',               bookSlug: 'dads-boots', langCode: 'nepali' },
   { dir: 'DadsBootsSwahili',              bookSlug: 'dads-boots', langCode: 'swahili' },
@@ -76,12 +85,12 @@ const CATALOG = [
 
   // ── Friends ─────────────────────────────────────────────────────────────────
   { dir: 'FriendsBanglaLv4',              bookSlug: 'friends', langCode: 'bangla' },
-  { dir: 'FriendsCVPortugueseLv4',        bookSlug: 'friends', langCode: 'cvportuguese' },
+  { dir: 'FriendsCVPortugueseLv4',        bookSlug: 'friends', langCode: 'caboverdeportuguese' },
   { dir: 'FriendsEnLv2',                  bookSlug: 'friends', langCode: 'english' },
   { dir: 'FriendsFrench',                 bookSlug: 'friends', langCode: 'french' },
   { dir: 'FriendsHIndiLv4',               bookSlug: 'friends', langCode: 'hindi' },
   { dir: 'FriendsHausa',                  bookSlug: 'friends', langCode: 'hausa' },
-  { dir: 'FriendsLugandaLv4',             bookSlug: 'friends', langCode: 'luganda' },
+  { dir: 'FriendsLugandaLv4',             bookSlug: 'friends', langCode: 'lugandan' },
   { dir: 'FriendsMarathiLv4',             bookSlug: 'friends', langCode: 'marathi' },
   { dir: 'FriendsNepaliLv4',              bookSlug: 'friends', langCode: 'nepali' },
   { dir: 'FriendsSwahiliLv4',             bookSlug: 'friends', langCode: 'swahili' },
@@ -91,8 +100,8 @@ const CATALOG = [
   { dir: 'FrogsStarryWishFrench',         bookSlug: 'frogs-starry-wish', langCode: 'french' },
   { dir: 'FrogsStarryWishHausa',          bookSlug: 'frogs-starry-wish', langCode: 'hausa' },
   { dir: 'FrogsStarryWishHindi',          bookSlug: 'frogs-starry-wish', langCode: 'hindi' },
-  { dir: 'FrogsStarryWishIsiZulu',        bookSlug: 'frogs-starry-wish', langCode: 'isizulu' },
-  { dir: 'FrogsStarryWishLuganda',        bookSlug: 'frogs-starry-wish', langCode: 'luganda' },
+  { dir: 'FrogsStarryWishIsiZulu',        bookSlug: 'frogs-starry-wish', langCode: 'zulu' },
+  { dir: 'FrogsStarryWishLuganda',        bookSlug: 'frogs-starry-wish', langCode: 'lugandan' },
   { dir: 'FrogsStarryWishMarathi',        bookSlug: 'frogs-starry-wish', langCode: 'marathi' },
   { dir: 'FrogsStarryWishNepali',         bookSlug: 'frogs-starry-wish', langCode: 'nepali' },
   { dir: 'FrogsStarryWishSwahili',        bookSlug: 'frogs-starry-wish', langCode: 'swahili' },
@@ -102,7 +111,7 @@ const CATALOG = [
   { dir: 'GuessWhatIAmAmharic',           bookSlug: 'guess-what-i-am', langCode: 'amharic' },
   { dir: 'GuessWhatIAmOromo',             bookSlug: 'guess-what-i-am', langCode: 'oromo' },
   { dir: 'GuessWhatIAmSomali',            bookSlug: 'guess-what-i-am', langCode: 'somali' },
-  { dir: 'GuessWhatIAmTigirigna',         bookSlug: 'guess-what-i-am', langCode: 'tigrinya' },
+  { dir: 'GuessWhatIAmTigirigna',         bookSlug: 'guess-what-i-am', langCode: 'tigragna' },
 
   // ── Hide and Seek ───────────────────────────────────────────────────────────
   // NOTE: HideAndSeekEnLv2 and HideAndSeekLevel4En are two different English levels.
@@ -111,8 +120,8 @@ const CATALOG = [
   { dir: 'HideAndSeekEnLv2',              bookSlug: 'hide-and-seek', langCode: 'english' },
   { dir: 'HideAndSeekLevel4En',           bookSlug: 'hide-and-seek', langCode: 'english',   duplicate: true },
   { dir: 'HideAndSeekHindiLv4',           bookSlug: 'hide-and-seek', langCode: 'hindi' },
-  { dir: 'HideAndSeekIsiZuluLv4',         bookSlug: 'hide-and-seek', langCode: 'isizulu' },
-  { dir: 'HideAndSeekLugLv4',             bookSlug: 'hide-and-seek', langCode: 'luganda' },
+  { dir: 'HideAndSeekIsiZuluLv4',         bookSlug: 'hide-and-seek', langCode: 'zulu' },
+  { dir: 'HideAndSeekLugLv4',             bookSlug: 'hide-and-seek', langCode: 'lugandan' },
   { dir: 'HideAndSeekNepLv4',             bookSlug: 'hide-and-seek', langCode: 'nepali' },
   { dir: 'HideAndSeekUkrLv6',             bookSlug: 'hide-and-seek', langCode: 'ukrainian' },
   { dir: 'HideAndSeekWolofLv4',           bookSlug: 'hide-and-seek', langCode: 'wolof' },
@@ -121,7 +130,7 @@ const CATALOG = [
   { dir: 'IAmFlyingAmharic',              bookSlug: 'i-am-flying', langCode: 'amharic' },
   { dir: 'IAmFlyingOromo',               bookSlug: 'i-am-flying', langCode: 'oromo' },
   { dir: 'IAmFlyingSomali',               bookSlug: 'i-am-flying', langCode: 'somali' },
-  { dir: 'IAmFlyingTigirigna',            bookSlug: 'i-am-flying', langCode: 'tigrinya' },
+  { dir: 'IAmFlyingTigirigna',            bookSlug: 'i-am-flying', langCode: 'tigragna' },
 
   // ── I Am Not Afraid ─────────────────────────────────────────────────────────
   { dir: 'IAmNotAfraidEnLv4',             bookSlug: 'i-am-not-afraid', langCode: 'english' },
@@ -130,13 +139,13 @@ const CATALOG = [
   { dir: 'ILoveAmharic',                  bookSlug: 'i-love', langCode: 'amharic' },
   { dir: 'ILoveOromo',                    bookSlug: 'i-love', langCode: 'oromo' },
   { dir: 'ILoveSomali',                   bookSlug: 'i-love', langCode: 'somali' },
-  { dir: 'ILoveTigirigna',               bookSlug: 'i-love', langCode: 'tigrinya' },
+  { dir: 'ILoveTigirigna',               bookSlug: 'i-love', langCode: 'tigragna' },
 
   // ── Let's Fly ───────────────────────────────────────────────────────────────
   { dir: 'LetsFlyLevel2En',               bookSlug: 'lets-fly', langCode: 'english' },
   { dir: 'LetsFlyHindiLv4',              bookSlug: 'lets-fly', langCode: 'hindi' },
-  { dir: 'LetsFlyIsiZuluLv4',             bookSlug: 'lets-fly', langCode: 'isizulu' },
-  { dir: 'LetsFlyLugLv4',                bookSlug: 'lets-fly', langCode: 'luganda' },
+  { dir: 'LetsFlyIsiZuluLv4',             bookSlug: 'lets-fly', langCode: 'zulu' },
+  { dir: 'LetsFlyLugLv4',                bookSlug: 'lets-fly', langCode: 'lugandan' },
   { dir: 'LetsFlyNepLv4',               bookSlug: 'lets-fly', langCode: 'nepali' },
   { dir: 'LetsFlyPashto',                 bookSlug: 'lets-fly', langCode: 'pashto' },
   { dir: 'LetsFlyUkrLv6',                bookSlug: 'lets-fly', langCode: 'ukrainian' },
@@ -145,20 +154,20 @@ const CATALOG = [
   // ── My First Day at the Market ──────────────────────────────────────────────
   { dir: 'MyFirstDayAtTheMarketHindi',    bookSlug: 'my-first-day-at-the-market', langCode: 'hindi' },
   // NOTE: IsiZulu exists in two dirs with different casing — only the first is used.
-  { dir: 'MyFirstDayAtTheMarketIsiZulu',  bookSlug: 'my-first-day-at-the-market', langCode: 'isizulu' },
-  { dir: 'MyFirstDayAtTheMarketIsizulu',  bookSlug: 'my-first-day-at-the-market', langCode: 'isizulu',  duplicate: true },
-  { dir: 'MyFirstDayAtTheMarketLuganda',  bookSlug: 'my-first-day-at-the-market', langCode: 'luganda' },
+  { dir: 'MyFirstDayAtTheMarketIsiZulu',  bookSlug: 'my-first-day-at-the-market', langCode: 'zulu' },
+  { dir: 'MyFirstDayAtTheMarketIsizulu',  bookSlug: 'my-first-day-at-the-market', langCode: 'zulu',  duplicate: true },
+  { dir: 'MyFirstDayAtTheMarketLuganda',  bookSlug: 'my-first-day-at-the-market', langCode: 'lugandan' },
   { dir: 'MyFirstDayAtTheMarketNepali',   bookSlug: 'my-first-day-at-the-market', langCode: 'nepali' },
   { dir: 'MyFirstDayAtTheMarketUkrainian',bookSlug: 'my-first-day-at-the-market', langCode: 'ukrainian' },
 
   // ── Playground ──────────────────────────────────────────────────────────────
   { dir: 'PlaygroundBangla',              bookSlug: 'playground', langCode: 'bangla' },
-  { dir: 'PlaygroundCVPortuguese',        bookSlug: 'playground', langCode: 'cvportuguese' },
+  { dir: 'PlaygroundCVPortuguese',        bookSlug: 'playground', langCode: 'caboverdeportuguese' },
   { dir: 'PlaygroundFrench',              bookSlug: 'playground', langCode: 'french' },
   { dir: 'PlaygroundHausa',               bookSlug: 'playground', langCode: 'hausa' },
   { dir: 'PlaygroundHindi',               bookSlug: 'playground', langCode: 'hindi' },
-  { dir: 'PlaygroundIsiZulu',             bookSlug: 'playground', langCode: 'isizulu' },
-  { dir: 'PlaygroundLuganda',             bookSlug: 'playground', langCode: 'luganda' },
+  { dir: 'PlaygroundIsiZulu',             bookSlug: 'playground', langCode: 'zulu' },
+  { dir: 'PlaygroundLuganda',             bookSlug: 'playground', langCode: 'lugandan' },
   { dir: 'PlaygroundMarathi',             bookSlug: 'playground', langCode: 'marathi' },
   { dir: 'PlaygroundNepali',              bookSlug: 'playground', langCode: 'nepali' },
   { dir: 'PlaygroundSwahili',             bookSlug: 'playground', langCode: 'swahili' },
@@ -169,14 +178,14 @@ const CATALOG = [
 
   // ── Tall and Short ──────────────────────────────────────────────────────────
   { dir: 'TallAndShortBanglaLv4',         bookSlug: 'tall-and-short', langCode: 'bangla' },
-  { dir: 'TallAndShortCVCreoleLv4',       bookSlug: 'tall-and-short', langCode: 'cvkreole' },
-  { dir: 'TallAndShortCVPortugueseLv4',   bookSlug: 'tall-and-short', langCode: 'cvportuguese' },
+  { dir: 'TallAndShortCVCreoleLv4',       bookSlug: 'tall-and-short', langCode: 'caboverdecreole' },
+  { dir: 'TallAndShortCVPortugueseLv4',   bookSlug: 'tall-and-short', langCode: 'caboverdeportuguese' },
   { dir: 'TallAndShortEnLv4',             bookSlug: 'tall-and-short', langCode: 'english' },
   { dir: 'TallAndShortFrench',            bookSlug: 'tall-and-short', langCode: 'french' },
   { dir: 'TallAndShortHausaLv4',          bookSlug: 'tall-and-short', langCode: 'hausa' },
   { dir: 'TallAndShortHindiLv4',          bookSlug: 'tall-and-short', langCode: 'hindi' },
-  { dir: 'TallAndShortIsiZuluLv4',        bookSlug: 'tall-and-short', langCode: 'isizulu' },
-  { dir: 'TallAndShortLugandaLv4',        bookSlug: 'tall-and-short', langCode: 'luganda' },
+  { dir: 'TallAndShortIsiZuluLv4',        bookSlug: 'tall-and-short', langCode: 'zulu' },
+  { dir: 'TallAndShortLugandaLv4',        bookSlug: 'tall-and-short', langCode: 'lugandan' },
   { dir: 'TallAndShortMarathiLv4',        bookSlug: 'tall-and-short', langCode: 'marathi' },
   { dir: 'TallAndShortNepaliLv4',         bookSlug: 'tall-and-short', langCode: 'nepali' },
   { dir: 'TallAndShortSwahiliLv4',        bookSlug: 'tall-and-short', langCode: 'swahili' },
@@ -187,12 +196,12 @@ const CATALOG = [
 
   // ── The Lion Runs and the Cow Walks ─────────────────────────────────────────
   { dir: 'TheLionRunsAndTheCowWalksBangla',        bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'bangla' },
-  { dir: 'TheLionRunsAndTheCowWalksCVPortuguese',  bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'cvportuguese' },
+  { dir: 'TheLionRunsAndTheCowWalksCVPortuguese',  bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'caboverdeportuguese' },
   { dir: 'TheLionRunsAndTheCowWalksFrench',        bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'french' },
   { dir: 'TheLionRunsAndTheCowWalksHausa',         bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'hausa' },
   { dir: 'TheLionRunsAndTheCowWalksHindi',         bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'hindi' },
-  { dir: 'TheLionRunsAndTheCowWalksIsiZulu',       bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'isizulu' },
-  { dir: 'TheLionRunsAndTheCowWalksLuganda',       bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'luganda' },
+  { dir: 'TheLionRunsAndTheCowWalksIsiZulu',       bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'zulu' },
+  { dir: 'TheLionRunsAndTheCowWalksLuganda',       bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'lugandan' },
   { dir: 'TheLionRunsAndTheCowWalksMarathi',       bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'marathi' },
   { dir: 'TheLionRunsAndTheCowWalksNepali',        bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'nepali' },
   { dir: 'TheLionRunsAndTheCowWalksSwahili',       bookSlug: 'the-lion-runs-and-the-cow-walks', langCode: 'swahili' },
@@ -201,8 +210,8 @@ const CATALOG = [
   // ── The Lost Doll ───────────────────────────────────────────────────────────
   { dir: 'TheLostDollEnLv4',              bookSlug: 'the-lost-doll', langCode: 'english' },
   { dir: 'TheLostDollHindiLv4',           bookSlug: 'the-lost-doll', langCode: 'hindi' },
-  { dir: 'TheLostDollIsiZuluLv4',         bookSlug: 'the-lost-doll', langCode: 'isizulu' },
-  { dir: 'TheLostDollLugLv4',             bookSlug: 'the-lost-doll', langCode: 'luganda' },
+  { dir: 'TheLostDollIsiZuluLv4',         bookSlug: 'the-lost-doll', langCode: 'zulu' },
+  { dir: 'TheLostDollLugLv4',             bookSlug: 'the-lost-doll', langCode: 'lugandan' },
   { dir: 'TheLostDollNepLv4',             bookSlug: 'the-lost-doll', langCode: 'nepali' },
   { dir: 'TheLostDollPashto',             bookSlug: 'the-lost-doll', langCode: 'pashto' },
   { dir: 'TheLostDollUkrLv4',             bookSlug: 'the-lost-doll', langCode: 'ukrainian' },
@@ -212,13 +221,13 @@ const CATALOG = [
   { dir: 'TheUmbrellasAmharic',           bookSlug: 'the-umbrellas', langCode: 'amharic' },
   { dir: 'TheUmbrellasOromo',             bookSlug: 'the-umbrellas', langCode: 'oromo' },
   { dir: 'TheUmbrellasSomali',            bookSlug: 'the-umbrellas', langCode: 'somali' },
-  { dir: 'TheUmbrellasTigirigna',         bookSlug: 'the-umbrellas', langCode: 'tigrinya' },
+  { dir: 'TheUmbrellasTigirigna',         bookSlug: 'the-umbrellas', langCode: 'tigragna' },
 
   // ── What Day Is It ──────────────────────────────────────────────────────────
   { dir: 'WhatDayIsItFrench',             bookSlug: 'what-day-is-it', langCode: 'french' },
   { dir: 'WhatDayIsItHindi',              bookSlug: 'what-day-is-it', langCode: 'hindi' },
-  { dir: 'WhatDayIsItIsiZulu',            bookSlug: 'what-day-is-it', langCode: 'isizulu' },
-  { dir: 'WhatDayIsItLuganda',            bookSlug: 'what-day-is-it', langCode: 'luganda' },
+  { dir: 'WhatDayIsItIsiZulu',            bookSlug: 'what-day-is-it', langCode: 'zulu' },
+  { dir: 'WhatDayIsItLuganda',            bookSlug: 'what-day-is-it', langCode: 'lugandan' },
   { dir: 'WhatDayIsItMarathi',            bookSlug: 'what-day-is-it', langCode: 'marathi' },
   { dir: 'WhatDayIsItNepali',             bookSlug: 'what-day-is-it', langCode: 'nepali' },
   { dir: 'WhatDayIsItSwahili',            bookSlug: 'what-day-is-it', langCode: 'swahili' },
@@ -226,12 +235,12 @@ const CATALOG = [
 
   // ── Who Can Help Me ─────────────────────────────────────────────────────────
   { dir: 'WhoCanHelpMeBangla',            bookSlug: 'who-can-help-me', langCode: 'bangla' },
-  { dir: 'WhoCanHelpMeCVCreole',          bookSlug: 'who-can-help-me', langCode: 'cvkreole' },
+  { dir: 'WhoCanHelpMeCVCreole',          bookSlug: 'who-can-help-me', langCode: 'caboverdecreole' },
   { dir: 'WhoCanHelpMeFrench',            bookSlug: 'who-can-help-me', langCode: 'french' },
   { dir: 'WhoCanHelpMeHausa',             bookSlug: 'who-can-help-me', langCode: 'hausa' },
   { dir: 'WhoCanHelpMeHindi',             bookSlug: 'who-can-help-me', langCode: 'hindi' },
-  { dir: 'WhoCanHelpMeIsiZulu',           bookSlug: 'who-can-help-me', langCode: 'isizulu' },
-  { dir: 'WhoCanHelpMeLuganda',           bookSlug: 'who-can-help-me', langCode: 'luganda' },
+  { dir: 'WhoCanHelpMeIsiZulu',           bookSlug: 'who-can-help-me', langCode: 'zulu' },
+  { dir: 'WhoCanHelpMeLuganda',           bookSlug: 'who-can-help-me', langCode: 'lugandan' },
   { dir: 'WhoCanHelpMeMarathi',           bookSlug: 'who-can-help-me', langCode: 'marathi' },
   { dir: 'WhoCanHelpMeNepali',            bookSlug: 'who-can-help-me', langCode: 'nepali' },
   { dir: 'WhoCanHelpMeSwahili',           bookSlug: 'who-can-help-me', langCode: 'swahili' },

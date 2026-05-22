@@ -433,31 +433,31 @@ file:///tmp/crwp-test/index.html?cr_book=the-lion-runs-and-the-cow-walks&cr_lang
 
 | Book slug | Languages available |
 |-----------|-------------------|
-| `the-bee-and-the-elephant` | english, hindi, isizulu, luganda, nepali, pashto, ukrainian, wolof |
-| `chakus-cycle` | bangla, cvkreole, cvportuguese, french, hausa, hindi, isizulu, luganda, marathi, nepali, swahili, ukrainian |
+| `the-bee-and-the-elephant` | english, hindi, zulu, lugandan, nepali, pashto, ukrainian, wolof |
+| `chakus-cycle` | bangla, caboverdecreole, caboverdeportuguese, french, hausa, hindi, zulu, lugandan, marathi, nepali, swahili, ukrainian |
 | `cicadas-song` | english, ukrainian |
 | `colours-level-2` | english |
-| `colours-level-4` | english, french, hindi, isizulu, luganda, nepali, pashto, ukrainian, wolof |
+| `colours-level-4` | english, french, hindi, zulu, lugandan, nepali, pashto, ukrainian, wolof |
 | `colours-of-nature` | english |
-| `come-come` | amharic, oromo, somali, tigrinya |
-| `dads-boots` | french, hausa, hindi, isizulu, luganda, marathi, nepali, swahili, ukrainian |
-| `friends` | bangla, cvportuguese, english, french, hausa, hindi, luganda, marathi, nepali, swahili, ukrainian |
-| `frogs-starry-wish` | french, hausa, hindi, isizulu, luganda, marathi, nepali, swahili, ukrainian |
-| `guess-what-i-am` | amharic, oromo, somali, tigrinya |
-| `hide-and-seek` | english, hindi, isizulu, luganda, nepali, ukrainian, wolof |
-| `i-am-flying` | amharic, oromo, somali, tigrinya |
+| `come-come` | amharic, oromo, somali, tigragna |
+| `dads-boots` | french, hausa, hindi, zulu, lugandan, marathi, nepali, swahili, ukrainian |
+| `friends` | bangla, caboverdeportuguese, english, french, hausa, hindi, lugandan, marathi, nepali, swahili, ukrainian |
+| `frogs-starry-wish` | french, hausa, hindi, zulu, lugandan, marathi, nepali, swahili, ukrainian |
+| `guess-what-i-am` | amharic, oromo, somali, tigragna |
+| `hide-and-seek` | english, hindi, zulu, lugandan, nepali, ukrainian, wolof |
+| `i-am-flying` | amharic, oromo, somali, tigragna |
 | `i-am-not-afraid` | english |
-| `i-love` | amharic, oromo, somali, tigrinya |
-| `lets-fly` | english, hindi, isizulu, luganda, nepali, pashto, ukrainian, wolof |
-| `my-first-day-at-the-market` | hindi, isizulu, luganda, nepali, ukrainian |
-| `playground` | bangla, cvportuguese, french, hausa, hindi, isizulu, luganda, marathi, nepali, swahili, ukrainian |
+| `i-love` | amharic, oromo, somali, tigragna |
+| `lets-fly` | english, hindi, zulu, lugandan, nepali, pashto, ukrainian, wolof |
+| `my-first-day-at-the-market` | hindi, zulu, lugandan, nepali, ukrainian |
+| `playground` | bangla, caboverdeportuguese, french, hausa, hindi, zulu, lugandan, marathi, nepali, swahili, ukrainian |
 | `talking-bag` | english |
-| `tall-and-short` | bangla, cvkreole, cvportuguese, english, french, hausa, hindi, isizulu, luganda, marathi, nepali, pashto, swahili, ukrainian |
-| `the-lion-runs-and-the-cow-walks` | bangla, cvportuguese, french, hausa, hindi, isizulu, luganda, marathi, nepali, swahili, ukrainian |
-| `the-lost-doll` | english, hindi, isizulu, luganda, nepali, pashto, ukrainian, wolof |
-| `the-umbrellas` | amharic, oromo, somali, tigrinya |
-| `what-day-is-it` | french, hindi, isizulu, luganda, marathi, nepali, swahili, ukrainian |
-| `who-can-help-me` | bangla, cvkreole, french, hausa, hindi, isizulu, luganda, marathi, nepali, swahili, ukrainian |
+| `tall-and-short` | bangla, caboverdecreole, caboverdeportuguese, english, french, hausa, hindi, zulu, lugandan, marathi, nepali, pashto, swahili, ukrainian |
+| `the-lion-runs-and-the-cow-walks` | bangla, caboverdeportuguese, french, hausa, hindi, zulu, lugandan, marathi, nepali, swahili, ukrainian |
+| `the-lost-doll` | english, hindi, zulu, lugandan, nepali, pashto, ukrainian, wolof |
+| `the-umbrellas` | amharic, oromo, somali, tigragna |
+| `what-day-is-it` | french, hindi, zulu, lugandan, marathi, nepali, swahili, ukrainian |
+| `who-can-help-me` | bangla, caboverdecreole, french, hausa, hindi, zulu, lugandan, marathi, nepali, swahili, ukrainian |
 
 ---
 

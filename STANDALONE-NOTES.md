@@ -86,12 +86,19 @@ Notable decisions:
 - Level variants of the same book are mapped to a **single slug** (e.g. `LetsFlyLevel2En` and `LetsFlyHindiLv4` both → `lets-fly`). The level encoding in the source directory name is treated as an internal implementation detail, not a stable identifier.
 - Two source directories had duplicate `(book, lang)` targets (noted with `duplicate: true` in the catalog). The first entry is canonical; the second is skipped by all build scripts.
 
-**Language codes:** reuses codes from `languages.json` where available.  
-New codes proposed (not yet in `languages.json`):
-- `tigrinya` — was `Tigirigna` in source directory names
-- `cvkreole` — Cape Verdean Creole
-- `cvportuguese` — Cape Verdean Portuguese
-- `pashto`, `amharic`, `oromo`, `somali`, `bangla`, `marathi`, `hausa`, `wolof` — please confirm or substitute your existing codes
+**Language codes:** match Feed The Monster's existing on-device slugs so cached
+content survives across releases. Where the FTM spelling differs from the more
+standard linguistic form, the FTM spelling wins for back-compat.
+
+Canonical (linguistic) name → FTM slug used here:
+- Cape Verdean Creole     → `caboverdecreole`     (formerly proposed `cvkreole`)
+- Cape Verdean Portuguese → `caboverdeportuguese` (formerly proposed `cvportuguese`)
+- isiZulu                 → `zulu`                (formerly proposed `isizulu`)
+- Luganda                 → `lugandan`            (formerly proposed `luganda`)
+- Tigrinya                → `tigragna`            (formerly proposed `tigrinya`; source dirs use `Tigirigna`)
+
+Other slugs match FTM as-is: `english`, `hindi`, `swahili`, `french`, `nepali`,
+`ukrainian`, `bangla`, `marathi`, `hausa`, `wolof`, `pashto`, `amharic`, `oromo`, `somali`.
 
 ---
 
