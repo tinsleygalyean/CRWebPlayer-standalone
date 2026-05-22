@@ -1,0 +1,14 @@
+node_modules/
+
+# Ignore build outputs in dist/ but keep committed engine static assets
+# (fonts, splide4.min.*, styles/, images/, index.html are committed)
+dist/app.js
+dist/app.js.map
+dist/standalone/
+
+# Raw book content is restored separately (see README - "Bring in BookContent")
+BookContent/
+
+*.map
+.DS_Store
+.env

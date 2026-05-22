@@ -1,0 +1,74 @@
+version: 2.1
+
+orbs:
+  aws-s3: circleci/aws-s3@3.0
+
+jobs:
+  s3-sync-development:
+    docker:
+      - image: 'cimg/python:3.6'
+    steps:
+      - checkout
+      - run:
+          name: Pre-sync Setup
+          command: |
+            echo "Setting up for S3 sync to development"
+      - aws-s3/sync:
+          arguments: |
+            --acl public-read \
+            --cache-control "max-age=86400" \
+            --exclude ".git/*" \
+            --exclude ".gitignore" \
+            --exclude ".gitattributes"
+          aws-access-key-id: AWS_ACCESS_KEY
+          aws-region: AWS_DEFAULT_REGION
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          from: ./
+          to: 's3://curious-reader-books-development'
+      - run:
+          name: Post-sync Confirmation
+          command: |
+            echo "Sync to development S3 bucket completed."
+
+  s3-sync-production:
+    docker:
+      - image: 'cimg/python:3.6'
+    steps:
+      - checkout
+      - run:
+          name: Pre-sync Setup
+          command: |
+            echo "Setting up for S3 sync to production"
+      - aws-s3/sync:
+          arguments: |
+            --acl public-read \
+            --cache-control "max-age=86400" \
+            --exclude ".git/*" \
+            --exclude ".gitignore" \
+            --exclude ".gitattributes"
+          aws-access-key-id: AWS_ACCESS_KEY
+          aws-region: AWS_PROD_REGION
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          from: ./
+          to: 's3://curious-reader-books-production'
+      - run:
+          name: Post-sync Confirmation
+          command: |
+            echo "Sync to production S3 bucket completed."
+
+workflows:
+  s3-sync-workflow:
+    jobs:
+      - s3-sync-development:
+          filters:
+            branches:
+              only:
+                - develop
+      - s3-sync-production:
+          filters:
+            branches:
+              only:
+                - main
+
+
+

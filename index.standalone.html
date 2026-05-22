@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Curious Reader</title>
+    <!--
+      §8 — NO external <script src="https://…"> tags.
+      §2c — NO navigator.serviceWorker.register() in any inline script.
+      All asset references use relative paths (§2d).
+    -->
+    <link rel="icon"             href="./assets/images/cropped-bird_red-2.webp" sizes="32x32" />
+    <link rel="icon"             href="./assets/images/cropped-bird_red-2.webp" sizes="192x192" />
+    <link rel="apple-touch-icon" href="./assets/images/cropped-bird_red-2.webp" />
+
+    <!-- Splide bundled locally — no CDN (§8) -->
+    <link rel="stylesheet" href="./assets/splide4.min.css" />
+
+    <style>
+      @font-face {
+        font-family: 'Quicksand';
+        src: url('./assets/fonts/Quicksand_Bold.otf');
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+        overflow: hidden;
+      }
+
+      #loadingScreen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        z-index: 9999;
+      }
+
+      #loadingScreen img {
+        width: 120px;
+        height: 120px;
+      }
+
+      #progressBarContainer {
+        width: 60%;
+        max-width: 400px;
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+        margin-top: 16px;
+        overflow: hidden;
+      }
+
+      #progressBar {
+        height: 100%;
+        width: 0%;
+        background: #4caf50;
+        border-radius: 4px;
+        transition: width 0.2s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- §8 — root element present before JS executes -->
+    <div id="loadingScreen">
+      <img src="./assets/images/loadingImg.gif" alt="Loading…" />
+      <div id="progressBarContainer">
+        <div id="progressBar"></div>
+      </div>
+    </div>
+
+    <!--
+      HtmlWebpackPlugin injects <script src="./crwebplayer.js"> here.
+      §8 — NO inline navigator.serviceWorker.register()
+      §8 — NO external CDN scripts
+    -->
+  </body>
+</html>
