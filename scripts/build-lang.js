@@ -28,6 +28,7 @@ const fs     = require('fs');
 const JSZip  = require('jszip');
 const crypto = require('crypto');
 const { getSourceDir } = require('./lib/content-catalog');
+const { preflightCheck, convertAsset, rewriteJsonRefs, AUDIO_OUT_EXT } = require('./lib/asset-converter');
 
 const ROOT            = path.resolve(__dirname, '..');
 const BOOK_CONTENT    = path.join(ROOT, 'BookContent');
@@ -48,12 +49,19 @@ function addDirToZip(zip, srcDir, zipPath) {
   let count = 0;
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
   for (const entry of entries) {
+    if (entry.name === '.DS_Store' || entry.name === 'Thumbs.db') continue;
     const srcFull = path.join(srcDir, entry.name);
-    const destPath = zipPath ? `${zipPath}/${entry.name}` : entry.name;
     if (entry.isDirectory()) {
-      count += addDirToZip(zip, srcFull, destPath);
+      const subZipPath = zipPath ? `${zipPath}/${entry.name}` : entry.name;
+      count += addDirToZip(zip, srcFull, subZipPath);
     } else {
-      zip.file(destPath, fs.readFileSync(srcFull));
+      // Audio re-encoded to Opus/WebM (or AAC/m4a with USE_M4A_FALLBACK=1);
+      // images re-encoded to WebP. Fonts and other formats pass through.
+      // Critically, convertAsset preserves audio duration to within 5 ms — the
+      // per-word timing offsets in text.json remain valid.
+      const converted = convertAsset(srcFull, entry.name);
+      const destPath = zipPath ? `${zipPath}/${converted.name}` : converted.name;
+      zip.file(destPath, converted.data);
       count++;
     }
   }
@@ -95,6 +103,8 @@ const LANG_DISPLAY_NAMES = {
   try {
     console.log(`\n═══ build-lang.js: ${bookSlug} / ${langCode} ═══\n`);
 
+    preflightCheck();
+
     const sourceDir = getSourceDir(bookSlug, langCode);
     if (!sourceDir) {
       throw new Error(
@@ -115,13 +125,23 @@ const LANG_DISPLAY_NAMES = {
     const langBase = `books/${bookSlug}/lang/${langCode}`;
 
     // ── text.json (renamed from content.json) ─────────────────────────────────
+    // Parse, rewrite every audio/image URL extension to its converted form
+    // (.mp3 → .webm, .jpg → .webp), then re-serialise. Per-word timing data
+    // (start/end timestamps in seconds) is left UNTOUCHED — only string
+    // values whose extension matches a known media format are rewritten.
     const contentJsonSrc = path.join(contentDir, 'content.json');
     if (!fs.existsSync(contentJsonSrc)) {
       throw new Error(`content.json not found at ${contentJsonSrc}`);
     }
-    const contentJson = fs.readFileSync(contentJsonSrc);
-    zip.file(`${langBase}/text.json`, contentJson);
-    console.log(`[build-lang] Added text.json from ${sourceDir}/content/content.json`);
+    let contentParsed;
+    try {
+      contentParsed = JSON.parse(fs.readFileSync(contentJsonSrc, 'utf8'));
+    } catch (e) {
+      throw new Error(`Could not parse ${contentJsonSrc}: ${e.message}`);
+    }
+    const rewrittenContent = rewriteJsonRefs(contentParsed);
+    zip.file(`${langBase}/text.json`, JSON.stringify(rewrittenContent));
+    console.log(`[build-lang] Added text.json (rewrote asset URLs to .webm/.webp).`);
 
     // ── audios/ ───────────────────────────────────────────────────────────────
     const audiosDir = path.join(contentDir, 'audios');
@@ -134,7 +154,9 @@ const LANG_DISPLAY_NAMES = {
     if (fontCount > 0) console.log(`[build-lang] Added ${fontCount} font file(s).`);
 
     // ── lang.json ─────────────────────────────────────────────────────────────
-    // Estimate audio duration by summing file sizes (rough proxy).
+    // Estimate audio duration from the original source files (before re-encode).
+    // The estimate stays valid because the asset converter preserves duration
+    // to within ±5 ms per file (enforced by the ffprobe guardrail).
     let audioDurationSeconds = 0;
     if (fs.existsSync(audiosDir)) {
       const audioFiles = fs.readdirSync(audiosDir).filter(f => /\.(mp3|wav|ogg|m4a)$/i.test(f));

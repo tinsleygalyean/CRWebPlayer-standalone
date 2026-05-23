@@ -29,6 +29,7 @@ const fs     = require('fs');
 const JSZip  = require('jszip');
 const crypto = require('crypto');
 const { getLanguagesForBook, getSourceDir } = require('./lib/content-catalog');
+const { preflightCheck, convertAsset, rewriteAssetExt } = require('./lib/asset-converter');
 
 const ROOT            = path.resolve(__dirname, '..');
 const BOOK_CONTENT    = path.join(ROOT, 'BookContent');
@@ -47,12 +48,18 @@ function addDirToZip(zip, srcDir, zipPath) {
   let count = 0;
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
   for (const entry of entries) {
+    // Skip macOS / Windows clutter that occasionally sneaks into BookContent.
+    if (entry.name === '.DS_Store' || entry.name === 'Thumbs.db') continue;
     const srcFull = path.join(srcDir, entry.name);
-    const destPath = zipPath ? `${zipPath}/${entry.name}` : entry.name;
     if (entry.isDirectory()) {
-      count += addDirToZip(zip, srcFull, destPath);
+      const subZipPath = zipPath ? `${zipPath}/${entry.name}` : entry.name;
+      count += addDirToZip(zip, srcFull, subZipPath);
     } else {
-      zip.file(destPath, fs.readFileSync(srcFull));
+      // convertAsset may rewrite the extension (.jpg → .webp). The directory
+      // portion of the path is unchanged; only the filename can change.
+      const converted = convertAsset(srcFull, entry.name);
+      const destPath = zipPath ? `${zipPath}/${converted.name}` : converted.name;
+      zip.file(destPath, converted.data);
       count++;
     }
   }
@@ -64,6 +71,9 @@ function addDirToZip(zip, srcDir, zipPath) {
 (async () => {
   try {
     console.log(`\n═══ build-book.js: ${bookSlug} ═══\n`);
+
+    // Verify ffmpeg / ffprobe / cwebp are on PATH before doing any work.
+    preflightCheck();
 
     const langs = getLanguagesForBook(bookSlug);
     if (langs.length === 0) {
@@ -138,7 +148,8 @@ function addDirToZip(zip, srcDir, zipPath) {
       engine: 'crwp',
       engineVersion: '0.3.12',
       titleByLang,
-      coverImage: `books/${bookSlug}/images/cover.jpg`,
+      // Use the converted extension so the container's cover thumbnail loads.
+      coverImage: rewriteAssetExt(`books/${bookSlug}/images/cover.jpg`),
       recommendedAgeRange: [4, 8],
       pageCount,
       languagesAvailable: langs.map(l => l.langCode),

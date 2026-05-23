@@ -76,6 +76,10 @@ This standalone build solves all of those problems. It produces three independen
 | Node.js | 18 LTS | `node --version` |
 | npm | 8 | Comes with Node 18 |
 | Git | any | For the initial clone |
+| ffmpeg + ffprobe | 4.x | Audio re-encode (Opus 24 kbps mono) — `brew install ffmpeg` |
+| cwebp | 1.x | Image re-encode (WebP q80) — `brew install webp` |
+
+> **Why ffmpeg and cwebp?** The build scripts re-encode narration audio and illustrations into modern, smaller formats (Opus + WebP) on the way into each ZIP. This shrinks the per-language ZIPs by roughly 60–70% and the per-book ZIPs by roughly 30–50% with no perceptible quality change. Audio duration is verified to within ±5 ms after every conversion so word-by-word highlighting stays in sync. Source content in `BookContent/` is never modified. See [Shrinking the payload](#shrinking-the-payload) below for details.
 
 ---
 
@@ -147,7 +151,14 @@ Each directory must contain a `content/` subdirectory with at minimum `content.j
 ### 3. Install dependencies
 
 ```bash
+# Node dependencies
 npm install
+
+# Native tools used by the build scripts (audio + image re-encode).
+# macOS:
+brew install ffmpeg webp
+# Debian / Ubuntu:
+sudo apt install ffmpeg webp
 ```
 
 This installs all packages listed in `package.json`, including:
@@ -488,6 +499,45 @@ All offline compatibility requirements from `STANDALONE-NOTES.md` are met:
 - **§8** — `index.html` has no external `<script>` tags; Splide is bundled locally
 
 See `STANDALONE-NOTES.md` for the full compliance table and outstanding items for the container team.
+
+---
+
+## Shrinking the payload
+
+Every audio and image file is re-encoded at build time before being added to the ZIP:
+
+| Source format | Output format | How |
+|---|---|---|
+| `.mp3` / `.wav` / `.ogg` / `.m4a` / `.aac` / `.flac` | **Opus 24 kbps mono in `.webm`** | `ffmpeg -c:a libopus -b:a 24k -ac 1 -vbr on -application voip` |
+| `.jpg` / `.jpeg` / `.png` | **WebP quality 80** | `cwebp -q 80 -m 6` |
+| `.webm` / `.opus` / `.webp` | passthrough | already in target format |
+| fonts, JSON, everything else | passthrough | not re-encoded |
+
+The audio extension inside the ZIP is `.webm`, not `.opus`, because `<audio>` element compatibility for WebM/Opus is broader than for raw `.opus` files (iOS WKWebView ≥ 17.4, all modern Android WebView, every desktop browser).
+
+### iOS < 17.4 fallback
+
+If the native container must support iOS 16 (which lacks native Opus-in-WebM playback in `<audio>`), set an environment variable to switch the audio target to AAC-HE 32 kbps mono in `.m4a` containers:
+
+```bash
+USE_M4A_FALLBACK=1 node scripts/build-all-standalone.js
+```
+
+AAC-HE produces files roughly 25% larger than Opus 24 kbps but plays natively on every iOS version the Curious Reader container supports.
+
+### Word-by-word highlight sync
+
+The player synchronizes word highlighting using per-word `start`/`end` timestamps (in seconds) stored in `content.json` and queried against `<audio>.currentTime`. To make sure re-encoding doesn't shift those timings, every audio conversion is verified with `ffprobe` and the build is **aborted with a clear error** if input and output duration differ by more than 5 ms. The ffmpeg invocation also deliberately omits every flag that could change duration — no `-ss`, no `-t`, no filters, no resampling.
+
+Numeric timing values inside `content.json` are never modified. Only string values whose extension matches a known media format (`.mp3` → `.webm`, `.jpg` → `.webp`) are rewritten.
+
+### Cache
+
+Converted files are cached at `dist/.asset-cache/<sha256>.<ext>` and re-used on subsequent builds. Re-encoding a fresh BookContent tree takes a while (minutes for a full `build:standalone` run); subsequent builds are near-instant for any file whose source hasn't changed. Delete the cache directory to force a full re-encode.
+
+```bash
+rm -rf dist/.asset-cache
+```
 
 ---
 

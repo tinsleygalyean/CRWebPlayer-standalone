@@ -102,6 +102,34 @@ Other slugs match FTM as-is: `english`, `hindi`, `swahili`, `french`, `nepali`,
 
 ---
 
+## 6a. Payload re-encoding (size reduction)
+
+To shrink download size, audio and image assets are re-encoded at build time on the way into each ZIP. Source files in `BookContent/` are never modified.
+
+| Source | Output | ffmpeg / cwebp invocation |
+|---|---|---|
+| `.mp3` / `.wav` / `.ogg` / `.m4a` / `.aac` / `.flac` | Opus 24 kbps mono in `.webm` | `ffmpeg -c:a libopus -b:a 24k -ac 1 -vbr on -application voip -map_metadata -1` |
+| `.jpg` / `.jpeg` / `.png` | WebP quality 80 | `cwebp -q 80 -m 6` |
+| `.webm` / `.opus` / `.webp` | passthrough | — |
+| Everything else (fonts, JSON, …) | passthrough | — |
+
+The audio file extension inside the ZIP is `.webm`, **not** `.opus`. `<audio>` plays Opus-in-WebM natively on iOS WKWebView ≥ 17.4 and every modern Android WebView and desktop browser. Raw `.opus` has narrower compatibility.
+
+### iOS < 17.4 fallback
+Set `USE_M4A_FALLBACK=1` in the environment to encode AAC-HE 32 kbps mono in `.m4a` containers instead. Output is ~25% larger than Opus but works on every iOS version the container currently supports.
+
+### Word-by-word highlight sync — safety guarantees
+The player drives word highlighting by comparing per-word `start`/`end` timestamps (in seconds) from `content.json` against `<audio>.currentTime`. To make sure re-encoding does not desync this:
+
+1. The ffmpeg command line contains **no** `-ss`, `-t`, filters, or resampling — only codec, bitrate, channel layout, and metadata strip. Nothing that could change duration.
+2. Every audio conversion is verified with `ffprobe`. If input and output duration differ by more than **5 ms** the build **aborts with an explicit error**.
+3. `content.json` is parsed in memory; only string values whose extension matches a known media format are rewritten (`.mp3` → `.webm`, `.jpg` → `.webp`). All numeric values — including the per-word `start`/`end` arrays — are passed through unchanged.
+
+### Cache
+Converted assets are cached at `dist/.asset-cache/<sha256>.<ext>` so repeat builds skip re-encoding. The cache directory is git-ignored. Delete it to force a full re-encode.
+
+---
+
 ## 7. Known issues / deviations
 
 1. **`sw.js` not emitted in standalone build.** The standalone entry point never registers a service worker, so no Workbox precache manifest is generated. The container team can walk the extracted directory directly (§3d says this is fine).
