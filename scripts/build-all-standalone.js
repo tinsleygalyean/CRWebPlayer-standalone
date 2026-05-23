@@ -18,11 +18,22 @@
  *
  * Usage:
  *   npm run build:standalone
- *   node scripts/build-all-standalone.js [--skip-engine] [--book <slug>]
+ *   node scripts/build-all-standalone.js [--skip-engine] [--book <slug>] [--opus]
  *
  * Flags:
  *   --skip-engine   Skip the webpack build (useful for re-packing content only)
  *   --book <slug>   Only build one book (plus all its languages)
+ *   --opus          Encode audio as Opus 24 kbps in `.webm` (smaller, but
+ *                   requires iOS WKWebView >= 17.4). Default is AAC-HE 32 kbps
+ *                   in `.m4a`, which plays on every iOS version the container
+ *                   supports.
+ *
+ * Audio encoding default:
+ *   This script defaults to USE_M4A_FALLBACK=1 (AAC-HE in `.m4a`) because the
+ *   Curious Reader container still has to run on iOS devices older than 17.4,
+ *   which cannot play Opus-in-WebM via `<audio>`. Pass `--opus` (or set
+ *   `USE_M4A_FALLBACK=0` explicitly) once the iOS support floor is 17.4+ to
+ *   get roughly 25% smaller language ZIPs.
  */
 
 const path    = require('path');
@@ -37,10 +48,26 @@ const DIST_STANDALONE = path.join(ROOT, 'dist', 'standalone');
 
 const args = process.argv.slice(2);
 const skipEngine  = args.includes('--skip-engine');
+const useOpus     = args.includes('--opus');
 const bookFilter  = (() => {
   const idx = args.indexOf('--book');
   return idx !== -1 ? args[idx + 1] : null;
 })();
+
+// Default audio encoding for this convenience script is AAC-HE in .m4a so
+// builds work on every iOS version the Curious Reader container supports.
+// `--opus` opts in to the smaller Opus-in-WebM path (iOS >= 17.4 only).
+// Explicit USE_M4A_FALLBACK in the environment always wins over both.
+if (process.env.USE_M4A_FALLBACK === undefined) {
+  process.env.USE_M4A_FALLBACK = useOpus ? '0' : '1';
+} else if (useOpus && process.env.USE_M4A_FALLBACK === '1') {
+  console.warn('[build-all] --opus ignored: USE_M4A_FALLBACK=1 is set in the environment.');
+}
+
+const audioMode = process.env.USE_M4A_FALLBACK === '1'
+  ? 'AAC-HE 32 kbps in .m4a (iOS-safe default)'
+  : 'Opus 24 kbps in .webm (iOS >= 17.4 only)';
+console.log(`[build-all] Audio encoding: ${audioMode}`);
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 

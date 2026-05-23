@@ -14,7 +14,7 @@
  * Hard guarantees (these are why the player keeps working):
  *
  *   1. Source files in `BookContent/` are NEVER modified.
- *   2. Audio duration is preserved to within 5 ms — verified by ffprobe after
+ *   2. Audio duration is preserved to within 50 ms — verified by ffprobe after
  *      every conversion. This is the safety net that protects word-by-word
  *      highlighting: the player reads per-word `start`/`end` timestamps in
  *      seconds from content.json and queries `<audio>.currentTime` against

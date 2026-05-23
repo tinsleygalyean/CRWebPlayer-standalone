@@ -115,14 +115,25 @@ To shrink download size, audio and image assets are re-encoded at build time on 
 
 The audio file extension inside the ZIP is `.webm`, **not** `.opus`. `<audio>` plays Opus-in-WebM natively on iOS WKWebView ≥ 17.4 and every modern Android WebView and desktop browser. Raw `.opus` has narrower compatibility.
 
-### iOS < 17.4 fallback
-Set `USE_M4A_FALLBACK=1` in the environment to encode AAC-HE 32 kbps mono in `.m4a` containers instead. Output is ~25% larger than Opus but works on every iOS version the container currently supports.
+### Default audio encoding (build-all-standalone.js)
+`scripts/build-all-standalone.js` defaults to **AAC-HE 32 kbps mono in `.m4a`** (i.e. it sets `USE_M4A_FALLBACK=1` for the spawned per-script builds unless overridden). This is the iOS-safe choice because Safari/WebKit only gained Opus-in-WebM `<audio>` playback in iOS 17.4 (March 2024), and the Curious Reader container still has to run on older iOS versions.
+
+Pass `--opus` (or set `USE_M4A_FALLBACK=0`) to opt in to Opus 24 kbps in `.webm` for ~25% smaller language ZIPs, once the iOS support floor is 17.4+.
+
+The lower-level scripts (`build-book.js`, `build-lang.js`) read `USE_M4A_FALLBACK` from the environment directly and have no default — they encode whatever the caller asks for.
+
+### Codec support
+| Encoder | Container | iOS WKWebView `<audio>` | Android WebView | Desktop |
+|---|---|---|---|---|
+| AAC-HE 32 kbps mono **(default)** | `.m4a` | iOS 11+ | 5.0+ | all current |
+| Opus 24 kbps mono (`--opus`) | `.webm` | iOS 17.4+ only | 5.0+ | all current |
+| WebP q80 (images) | `.webp` | iOS 14+ | 4.4+ | all current |
 
 ### Word-by-word highlight sync — safety guarantees
 The player drives word highlighting by comparing per-word `start`/`end` timestamps (in seconds) from `content.json` against `<audio>.currentTime`. To make sure re-encoding does not desync this:
 
 1. The ffmpeg command line contains **no** `-ss`, `-t`, filters, or resampling — only codec, bitrate, channel layout, and metadata strip. Nothing that could change duration.
-2. Every audio conversion is verified with `ffprobe`. If input and output duration differ by more than **5 ms** the build **aborts with an explicit error**.
+2. Every audio conversion is verified with `ffprobe`. If input and output duration differ by more than **50 ms** the build **aborts with an explicit error**. (50 ms is well below the perceptual word-sync threshold; Opus packets are 20 ms by default, so frame-boundary rounding alone can produce 20–40 ms of legitimate drift.)
 3. `content.json` is parsed in memory; only string values whose extension matches a known media format are rewritten (`.mp3` → `.webm`, `.jpg` → `.webp`). All numeric values — including the per-word `start`/`end` arrays — are passed through unchanged.
 
 ### Cache

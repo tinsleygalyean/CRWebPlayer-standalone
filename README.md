@@ -515,19 +515,35 @@ Every audio and image file is re-encoded at build time before being added to the
 
 The audio extension inside the ZIP is `.webm`, not `.opus`, because `<audio>` element compatibility for WebM/Opus is broader than for raw `.opus` files (iOS WKWebView ≥ 17.4, all modern Android WebView, every desktop browser).
 
-### iOS < 17.4 fallback
+### Audio encoding default (iOS-safe)
 
-If the native container must support iOS 16 (which lacks native Opus-in-WebM playback in `<audio>`), set an environment variable to switch the audio target to AAC-HE 32 kbps mono in `.m4a` containers:
+`scripts/build-all-standalone.js` **defaults** to AAC-HE 32 kbps mono in `.m4a` containers. AAC-HE plays natively on every iOS version the Curious Reader container currently supports (iOS 11+), so the default build is safe to ship to the full install base. Output is roughly 25% larger than Opus 24 kbps but still a large reduction versus the original MP3s.
+
+Per-script builds (`build-book.js` / `build-lang.js`) read `USE_M4A_FALLBACK` directly from the environment and have **no default** — they encode whatever you ask for. Use `build-all-standalone.js` if you want the iOS-safe default applied automatically.
+
+### Opting in to Opus (smaller, iOS ≥ 17.4 only)
+
+Once your iOS support floor is 17.4 or newer, switch to Opus 24 kbps mono in `.webm`:
 
 ```bash
-USE_M4A_FALLBACK=1 node scripts/build-all-standalone.js
+node scripts/build-all-standalone.js --opus
+# equivalent:
+USE_M4A_FALLBACK=0 node scripts/build-all-standalone.js
 ```
 
-AAC-HE produces files roughly 25% larger than Opus 24 kbps but plays natively on every iOS version the Curious Reader container supports.
+Opus produces roughly 25% smaller language ZIPs than the AAC-HE default. Safari/WebKit only added Opus-in-WebM playback in `<audio>` in iOS 17.4 (March 2024), so anything older falls back to silence — keep the default unless you've confirmed your install base.
+
+### Codec / container support summary
+
+| Encoder | Container | iOS WKWebView `<audio>` | Android WebView | Desktop browsers |
+|---|---|---|---|---|
+| AAC-HE 32 kbps mono **(default)** | `.m4a` | iOS 11+ | 5.0+ | All current |
+| Opus 24 kbps mono (`--opus`) | `.webm` | **iOS 17.4+ only** | 5.0+ | All current |
+| WebP q80 (images) | `.webp` | iOS 14+ | 4.4+ | All current |
 
 ### Word-by-word highlight sync
 
-The player synchronizes word highlighting using per-word `start`/`end` timestamps (in seconds) stored in `content.json` and queried against `<audio>.currentTime`. To make sure re-encoding doesn't shift those timings, every audio conversion is verified with `ffprobe` and the build is **aborted with a clear error** if input and output duration differ by more than 5 ms. The ffmpeg invocation also deliberately omits every flag that could change duration — no `-ss`, no `-t`, no filters, no resampling.
+The player synchronizes word highlighting using per-word `start`/`end` timestamps (in seconds) stored in `content.json` and queried against `<audio>.currentTime`. To make sure re-encoding doesn't shift those timings, every audio conversion is verified with `ffprobe` and the build is **aborted with a clear error** if input and output duration differ by more than 50 ms. The ffmpeg invocation also deliberately omits every flag that could change duration — no `-ss`, no `-t`, no filters, no resampling.
 
 Numeric timing values inside `content.json` are never modified. Only string values whose extension matches a known media format (`.mp3` → `.webm`, `.jpg` → `.webp`) are rewritten.
 
