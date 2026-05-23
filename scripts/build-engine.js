@@ -38,6 +38,10 @@ const OUT_ZIP      = path.join(DIST_STANDALONE, 'crwp-core.zip');
 // Engine-level static assets (relative to ROOT) to include in the ZIP.
 // These are files that ship with the engine, not with any specific book.
 const ENGINE_STATIC_ASSETS = [
+  // App stylesheet — defines loading screen, .cr-clickable-word, .splide__arrow
+  // sizing, and the page-level responsive font media queries. The standalone
+  // build is unstyled (black bg, stacked arrows, oversized text) without this.
+  { src: 'dist/styles/app.css', dest: 'assets/styles/app.css' },
   // Splide (bundled locally — no CDN)
   { src: 'node_modules/@splidejs/splide/dist/css/splide-core.min.css', dest: 'assets/splide4.min.css' },
   { src: 'node_modules/@splidejs/splide/dist/js/splide.min.js',         dest: 'assets/splide4.min.js' },
