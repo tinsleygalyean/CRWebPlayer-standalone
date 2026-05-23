@@ -116,16 +116,18 @@ To shrink download size, audio and image assets are re-encoded at build time on 
 The audio file extension inside the ZIP is `.webm`, **not** `.opus`. `<audio>` plays Opus-in-WebM natively on iOS WKWebView ≥ 17.4 and every modern Android WebView and desktop browser. Raw `.opus` has narrower compatibility.
 
 ### Default audio encoding (build-all-standalone.js)
-`scripts/build-all-standalone.js` defaults to **AAC-HE 32 kbps mono in `.m4a`** (i.e. it sets `USE_M4A_FALLBACK=1` for the spawned per-script builds unless overridden). This is the iOS-safe choice because Safari/WebKit only gained Opus-in-WebM `<audio>` playback in iOS 17.4 (March 2024), and the Curious Reader container still has to run on older iOS versions.
+`scripts/build-all-standalone.js` defaults to **LC-AAC 48 kbps mono in `.m4a`** (i.e. it sets `USE_M4A_FALLBACK=1` for the spawned per-script builds unless overridden). This is the iOS-safe choice because Safari/WebKit only gained Opus-in-WebM `<audio>` playback in iOS 17.4 (March 2024), and the Curious Reader container still has to run on older iOS versions.
 
-Pass `--opus` (or set `USE_M4A_FALLBACK=0`) to opt in to Opus 24 kbps in `.webm` for ~25% smaller language ZIPs, once the iOS support floor is 17.4+.
+We use LC-AAC, **not HE-AAC**. HE-AAC requires `libfdk_aac` (non-free, not in Homebrew's default ffmpeg) or `aac_at` (macOS-only AudioToolbox); stock ffmpeg's native AAC encoder rejects HE-AAC with `Profile not supported!`. LC-AAC at 48 kbps mono works with every ffmpeg install and is still a meaningful reduction from the source MP3s.
+
+Pass `--opus` (or set `USE_M4A_FALLBACK=0`) to opt in to Opus 24 kbps in `.webm` for ~50% smaller language ZIPs, once the iOS support floor is 17.4+.
 
 The lower-level scripts (`build-book.js`, `build-lang.js`) read `USE_M4A_FALLBACK` from the environment directly and have no default — they encode whatever the caller asks for.
 
 ### Codec support
 | Encoder | Container | iOS WKWebView `<audio>` | Android WebView | Desktop |
 |---|---|---|---|---|
-| AAC-HE 32 kbps mono **(default)** | `.m4a` | iOS 11+ | 5.0+ | all current |
+| LC-AAC 48 kbps mono **(default)** | `.m4a` | iOS 11+ | 5.0+ | all current |
 | Opus 24 kbps mono (`--opus`) | `.webm` | iOS 17.4+ only | 5.0+ | all current |
 | WebP q80 (images) | `.webp` | iOS 14+ | 4.4+ | all current |
 

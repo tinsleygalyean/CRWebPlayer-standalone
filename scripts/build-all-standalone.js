@@ -24,16 +24,16 @@
  *   --skip-engine   Skip the webpack build (useful for re-packing content only)
  *   --book <slug>   Only build one book (plus all its languages)
  *   --opus          Encode audio as Opus 24 kbps in `.webm` (smaller, but
- *                   requires iOS WKWebView >= 17.4). Default is AAC-HE 32 kbps
+ *                   requires iOS WKWebView >= 17.4). Default is LC-AAC 48 kbps
  *                   in `.m4a`, which plays on every iOS version the container
  *                   supports.
  *
  * Audio encoding default:
- *   This script defaults to USE_M4A_FALLBACK=1 (AAC-HE in `.m4a`) because the
+ *   This script defaults to USE_M4A_FALLBACK=1 (LC-AAC in `.m4a`) because the
  *   Curious Reader container still has to run on iOS devices older than 17.4,
  *   which cannot play Opus-in-WebM via `<audio>`. Pass `--opus` (or set
  *   `USE_M4A_FALLBACK=0` explicitly) once the iOS support floor is 17.4+ to
- *   get roughly 25% smaller language ZIPs.
+ *   get noticeably smaller language ZIPs.
  */
 
 const path    = require('path');
@@ -65,7 +65,7 @@ if (process.env.USE_M4A_FALLBACK === undefined) {
 }
 
 const audioMode = process.env.USE_M4A_FALLBACK === '1'
-  ? 'AAC-HE 32 kbps in .m4a (iOS-safe default)'
+  ? 'LC-AAC 48 kbps in .m4a (iOS-safe default)'
   : 'Opus 24 kbps in .webm (iOS >= 17.4 only)';
 console.log(`[build-all] Audio encoding: ${audioMode}`);
 

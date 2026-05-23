@@ -7,7 +7,7 @@
  * payload by ~50–65% without touching the source `BookContent/` tree.
  *
  *   Audio: any → Opus 24 kbps mono in WebM container (`.webm`)
- *          (fallback: AAC-HE 32 kbps mono in `.m4a` when USE_M4A_FALLBACK=1
+ *          (fallback: LC-AAC 48 kbps mono in `.m4a` when USE_M4A_FALLBACK=1
  *           — choose this if the container still supports iOS < 17.4)
  *   Image: .jpg / .jpeg / .png → WebP quality 80 (`.webp`)
  *
@@ -39,9 +39,17 @@ const CACHE_DIR = path.join(ROOT, 'dist', '.asset-cache');
 
 // ── configuration ────────────────────────────────────────────────────────────
 
-// Set USE_M4A_FALLBACK=1 in the environment to encode AAC-HE in .m4a instead
+// Set USE_M4A_FALLBACK=1 in the environment to encode AAC in .m4a instead
 // of Opus in .webm. Use this if the native WebView container still supports
 // iOS < 17.4 (which lacks native Opus-in-WebM playback in <audio>).
+//
+// We use LC-AAC (the AAC profile every stock ffmpeg build supports), NOT
+// HE-AAC. HE-AAC requires libfdk_aac (non-free, not in Homebrew's default
+// ffmpeg) or `aac_at` (macOS-only AudioToolbox), and falls over with
+// "Profile not supported!" on a vanilla `brew install ffmpeg`. LC-AAC at
+// 48 kbps mono for narration speech is still a large reduction from source
+// MP3s (typically 64–128 kbps) and plays everywhere — iOS 11+, Android 5+,
+// all desktop browsers.
 const USE_AAC_FALLBACK = process.env.USE_M4A_FALLBACK === '1';
 
 const AUDIO_OUT_EXT = USE_AAC_FALLBACK ? '.m4a' : '.webm';
@@ -51,7 +59,8 @@ const AUDIO_OUT_MUXER = USE_AAC_FALLBACK ? 'mp4' : 'webm';
 
 // Bumped whenever the encoder invocation changes — used in the cache key so
 // stale converted files from an older encoder config never get re-used.
-const ENCODER_VERSION = USE_AAC_FALLBACK ? 'aac-32k-mono-v1' : 'opus-24k-mono-voip-v1';
+// v2: switched from HE-AAC 32k (failed on stock ffmpeg) to LC-AAC 48k.
+const ENCODER_VERSION = USE_AAC_FALLBACK ? 'aac-lc-48k-mono-v2' : 'opus-24k-mono-voip-v1';
 const IMAGE_ENCODER_VERSION = 'cwebp-q80-m6-v1';
 
 const AUDIO_INPUT_EXTS = new Set(['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac']);
@@ -156,8 +165,10 @@ function convertAudio(srcPath) {
   const ffmpegArgs = USE_AAC_FALLBACK
     ? ['-y', '-hide_banner', '-loglevel', 'error',
        '-i', srcPath,
-       '-c:a', 'aac', '-b:a', '32k', '-ac', '1',
-       '-profile:a', 'aac_he',
+       // LC-AAC (no -profile:a aac_he) — works with stock ffmpeg everywhere.
+       // HE-AAC needs libfdk_aac (non-free) or aac_at (macOS-only) and fails
+       // on a vanilla `brew install ffmpeg` with "Profile not supported!".
+       '-c:a', 'aac', '-b:a', '48k', '-ac', '1',
        '-map_metadata', '-1',
        '-f', AUDIO_OUT_MUXER,
        tmpOut]

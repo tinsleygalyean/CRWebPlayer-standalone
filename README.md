@@ -517,7 +517,9 @@ The audio extension inside the ZIP is `.webm`, not `.opus`, because `<audio>` el
 
 ### Audio encoding default (iOS-safe)
 
-`scripts/build-all-standalone.js` **defaults** to AAC-HE 32 kbps mono in `.m4a` containers. AAC-HE plays natively on every iOS version the Curious Reader container currently supports (iOS 11+), so the default build is safe to ship to the full install base. Output is roughly 25% larger than Opus 24 kbps but still a large reduction versus the original MP3s.
+`scripts/build-all-standalone.js` **defaults** to LC-AAC 48 kbps mono in `.m4a` containers. LC-AAC plays natively on every iOS version the Curious Reader container currently supports (iOS 11+), so the default build is safe to ship to the full install base. Output is roughly 2× the size of Opus 24 kbps but still a meaningful reduction versus the original MP3s.
+
+> **Why LC-AAC and not HE-AAC at 32 kbps?** HE-AAC requires the non-free `libfdk_aac` encoder (not in Homebrew's default ffmpeg) or macOS-only `aac_at`. Stock ffmpeg's native AAC encoder rejects HE-AAC with `Profile not supported!`. LC-AAC at a slightly higher bitrate is the only AAC config that works out of the box on every install.
 
 Per-script builds (`build-book.js` / `build-lang.js`) read `USE_M4A_FALLBACK` directly from the environment and have **no default** — they encode whatever you ask for. Use `build-all-standalone.js` if you want the iOS-safe default applied automatically.
 
@@ -531,13 +533,13 @@ node scripts/build-all-standalone.js --opus
 USE_M4A_FALLBACK=0 node scripts/build-all-standalone.js
 ```
 
-Opus produces roughly 25% smaller language ZIPs than the AAC-HE default. Safari/WebKit only added Opus-in-WebM playback in `<audio>` in iOS 17.4 (March 2024), so anything older falls back to silence — keep the default unless you've confirmed your install base.
+Opus produces roughly 50% smaller language ZIPs than the LC-AAC default. Safari/WebKit only added Opus-in-WebM playback in `<audio>` in iOS 17.4 (March 2024), so anything older falls back to silence — keep the default unless you've confirmed your install base.
 
 ### Codec / container support summary
 
 | Encoder | Container | iOS WKWebView `<audio>` | Android WebView | Desktop browsers |
 |---|---|---|---|---|
-| AAC-HE 32 kbps mono **(default)** | `.m4a` | iOS 11+ | 5.0+ | All current |
+| LC-AAC 48 kbps mono **(default)** | `.m4a` | iOS 11+ | 5.0+ | All current |
 | Opus 24 kbps mono (`--opus`) | `.webm` | **iOS 17.4+ only** | 5.0+ | All current |
 | WebP q80 (images) | `.webp` | iOS 14+ | 4.4+ | All current |
 
