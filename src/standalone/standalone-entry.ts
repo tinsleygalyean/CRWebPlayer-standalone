@@ -89,8 +89,54 @@ declare const __DEFAULT_LANG_CODE__: string;
 const DEFAULT_BOOK_SLUG: string = (typeof __DEFAULT_BOOK_SLUG__ !== 'undefined') ? __DEFAULT_BOOK_SLUG__ : '';
 const DEFAULT_LANG_CODE: string = (typeof __DEFAULT_LANG_CODE__ !== 'undefined') ? __DEFAULT_LANG_CODE__ : '';
 
+// ── standalone-only exit button ──────────────────────────────────────────────
+// The upstream web player has no exit affordance — in a regular browser tab the
+// back button closes the page. When embedded in a native WebView (no browser
+// chrome), the standalone build needs an in-page close button. We render an X
+// in the top-right corner and post a message that the RN/iOS/Android container
+// can intercept to close the WebView. Falls back to window.close() for testing.
+//
+// Container integration:
+//   - React Native (react-native-webview): listen for onMessage with data === 'cr-exit'
+//   - iOS WKWebView: implement userContentController:didReceiveScriptMessage:
+//     and register the 'crExit' message handler
+//   - Android WebView: addJavascriptInterface(obj, 'CrExit') with a postMessage(s) method
+function installExitButton(): void {
+  if (document.getElementById('cr-standalone-exit')) return;
+  const btn = document.createElement('button');
+  btn.id = 'cr-standalone-exit';
+  btn.type = 'button';
+  btn.setAttribute('aria-label', 'Close');
+  btn.textContent = '\u00d7'; // × multiplication sign
+  btn.style.cssText = [
+    'position:fixed', 'top:12px', 'right:12px', 'z-index:10000',
+    'width:44px', 'height:44px', 'border:none', 'border-radius:50%',
+    'background:rgba(0,0,0,0.55)', 'color:#fff',
+    'font-size:28px', 'line-height:44px', 'font-family:sans-serif',
+    'text-align:center', 'padding:0', 'cursor:pointer',
+    'box-shadow:0 2px 6px rgba(0,0,0,0.3)',
+    '-webkit-tap-highlight-color:transparent',
+  ].join(';');
+  btn.addEventListener('click', () => {
+    // React Native WebView
+    const w = window as unknown as {
+      ReactNativeWebView?: { postMessage: (m: string) => void };
+      webkit?: { messageHandlers?: { crExit?: { postMessage: (m: string) => void } } };
+      CrExit?: { postMessage: (m: string) => void };
+    };
+    try { w.ReactNativeWebView?.postMessage('cr-exit'); } catch { /* swallow */ }
+    try { w.webkit?.messageHandlers?.crExit?.postMessage('cr-exit'); } catch { /* swallow */ }
+    try { w.CrExit?.postMessage('cr-exit'); } catch { /* swallow */ }
+    // Broadcast for in-app listeners + fallback for plain browser testing
+    try { new BroadcastChannel('cr-message-channel').postMessage({ type: 'cr-exit' }); } catch { /* swallow */ }
+    try { window.close(); } catch { /* swallow */ }
+  });
+  document.body.appendChild(btn);
+}
+
 // ── §8: wait for DOM ──────────────────────────────────────────────────────────
 async function boot(): Promise<void> {
+  installExitButton();
   const { bookSlug, langCode } = await resolveBookAndLang();
 
   if (!bookSlug || !langCode) {

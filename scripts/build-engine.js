@@ -42,8 +42,11 @@ const ENGINE_STATIC_ASSETS = [
   // sizing, and the page-level responsive font media queries. The standalone
   // build is unstyled (black bg, stacked arrows, oversized text) without this.
   { src: 'dist/styles/app.css', dest: 'assets/styles/app.css' },
-  // Splide (bundled locally — no CDN)
-  { src: 'node_modules/@splidejs/splide/dist/css/splide-core.min.css', dest: 'assets/splide4.min.css' },
+  // Splide (bundled locally — no CDN).
+  // IMPORTANT: use the FULL splide.min.css, not splide-core.min.css. The "core"
+  // variant strips out .splide__arrow and .splide__pagination styling entirely,
+  // which makes the prev/next arrows and the bottom progress dots invisible.
+  { src: 'node_modules/@splidejs/splide/dist/css/splide.min.css',       dest: 'assets/splide4.min.css' },
   { src: 'node_modules/@splidejs/splide/dist/js/splide.min.js',         dest: 'assets/splide4.min.js' },
   // Engine-level fonts
   { src: 'dist/fonts/Quicksand_Bold.otf',  dest: 'assets/fonts/Quicksand_Bold.otf',  optional: true },
