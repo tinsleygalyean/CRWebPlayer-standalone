@@ -45,6 +45,14 @@ const CACHE_DIR = path.join(ROOT, 'dist', '.asset-cache');
 const USE_AAC_FALLBACK = process.env.USE_M4A_FALLBACK === '1';
 
 const AUDIO_OUT_EXT = USE_AAC_FALLBACK ? '.m4a' : '.webm';
+// ffmpeg infers the muxer from the output extension; we write to a `.tmp`
+// suffix during conversion, so we must pass an explicit -f flag.
+const AUDIO_OUT_MUXER = USE_AAC_FALLBACK ? 'mp4' : 'webm';
+
+// Bumped whenever the encoder invocation changes — used in the cache key so
+// stale converted files from an older encoder config never get re-used.
+const ENCODER_VERSION = USE_AAC_FALLBACK ? 'aac-32k-mono-v1' : 'opus-24k-mono-voip-v1';
+const IMAGE_ENCODER_VERSION = 'cwebp-q80-m6-v1';
 
 const AUDIO_INPUT_EXTS = new Set(['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac']);
 // If the source is already in our target format, pass through unchanged.
@@ -56,8 +64,11 @@ const IMAGE_INPUT_EXTS       = new Set(['.jpg', '.jpeg', '.png']);
 const IMAGE_PASSTHROUGH_EXTS = new Set(['.webp']);
 
 // Maximum allowed audio duration drift between input and output (seconds).
-// 5 ms is well below the perceptual threshold for narration sync (~50 ms).
-const MAX_AUDIO_DRIFT_SECONDS = 0.005;
+// 50 ms is the perceptual sync threshold for narration / word highlighting.
+// Opus packets are 20 ms by default, so frame-boundary rounding alone can
+// produce ~20–40 ms of legitimate drift; anything larger than 50 ms indicates
+// a real problem (truncation, resample, codec error).
+const MAX_AUDIO_DRIFT_SECONDS = 0.05;
 
 // ── preflight ────────────────────────────────────────────────────────────────
 
@@ -122,9 +133,14 @@ function convertAudio(srcPath) {
     return null;
   }
 
-  // Cache key includes the encoding scheme so swapping USE_M4A_FALLBACK
-  // doesn't return a stale Opus file for an m4a-mode build (and vice versa).
-  const hash = sha256File(srcPath) + (USE_AAC_FALLBACK ? '-aac' : '-opus');
+  // Cache key includes the full encoder version string so any change to the
+  // ffmpeg invocation (bitrate, channel layout, encoder choice) automatically
+  // invalidates previously cached output.
+  const hash = crypto
+    .createHash('sha256')
+    .update(fs.readFileSync(srcPath))
+    .update('|' + ENCODER_VERSION)
+    .digest('hex');
   const cachePath = path.join(CACHE_DIR, `${hash}${AUDIO_OUT_EXT}`);
   if (fs.existsSync(cachePath)) {
     return { path: cachePath, ext: AUDIO_OUT_EXT };
@@ -135,18 +151,22 @@ function convertAudio(srcPath) {
   // IMPORTANT: NO filters, NO -ss, NO -t, NO -af. Anything that changes
   // duration breaks word-by-word highlight sync. The duration guardrail
   // below catches accidents but the safe baseline is to add nothing.
+  // -f <muxer> is required because tmpOut ends in `.tmp` — ffmpeg cannot
+  // infer the container format from the extension in that case.
   const ffmpegArgs = USE_AAC_FALLBACK
     ? ['-y', '-hide_banner', '-loglevel', 'error',
        '-i', srcPath,
        '-c:a', 'aac', '-b:a', '32k', '-ac', '1',
        '-profile:a', 'aac_he',
        '-map_metadata', '-1',
+       '-f', AUDIO_OUT_MUXER,
        tmpOut]
     : ['-y', '-hide_banner', '-loglevel', 'error',
        '-i', srcPath,
        '-c:a', 'libopus', '-b:a', '24k', '-ac', '1',
        '-vbr', 'on', '-application', 'voip',
        '-map_metadata', '-1',
+       '-f', AUDIO_OUT_MUXER,
        tmpOut];
 
   try {
@@ -196,7 +216,11 @@ function convertImage(srcPath) {
     return null;
   }
 
-  const hash = sha256File(srcPath);
+  const hash = crypto
+    .createHash('sha256')
+    .update(fs.readFileSync(srcPath))
+    .update('|' + IMAGE_ENCODER_VERSION)
+    .digest('hex');
   const cachePath = path.join(CACHE_DIR, `${hash}.webp`);
   if (fs.existsSync(cachePath)) {
     return { path: cachePath, ext: '.webp' };
@@ -259,16 +283,42 @@ function rewriteAssetExt(name) {
 }
 
 /**
- * Walk an in-memory JSON tree and rewrite every string value whose extension
- * matches a known input audio/image format to its converted extension.
+ * Conservative check for "looks like an asset filename / relative path".
+ *
+ * Narrative prose inside content.json contains spaces, punctuation, and is
+ * often long; asset references are short bare filenames or relative paths
+ * like `audio_001.mp3` or `images/p3.png`. We only rewrite strings that:
+ *
+ *   - end in one of our known input extensions (case-insensitive), AND
+ *   - contain no whitespace, no newlines, no `<`/`>` (rules out any prose
+ *     that happens to end in `.png` or `.mp3`), AND
+ *   - are ≤ 256 chars (asset paths are short).
+ *
+ * This prevents accidental mutation of narrative text that happens to end
+ * in an extension-shaped suffix.
+ */
+function looksLikeAssetPath(s) {
+  if (typeof s !== 'string') return false;
+  if (s.length === 0 || s.length > 256) return false;
+  if (/[\s<>]/.test(s)) return false;
+  const ext = path.extname(s).toLowerCase();
+  return AUDIO_INPUT_EXTS.has(ext) || IMAGE_INPUT_EXTS.has(ext);
+}
+
+/**
+ * Walk an in-memory JSON tree and rewrite asset-path string values to point
+ * at the converted assets in the ZIP.
  *
  * CRITICAL: numeric values (per-word `start`/`end` timestamps in seconds,
- * page durations, transition delays, etc.) are not touched. Only string
- * values with a recognized media extension are rewritten.
+ * page durations, transition delays, etc.) are not touched. Strings that
+ * don't look like asset filenames (see `looksLikeAssetPath`) are not
+ * touched either.
  */
 function rewriteJsonRefs(node) {
   if (node === null || node === undefined) return node;
-  if (typeof node === 'string') return rewriteAssetExt(node);
+  if (typeof node === 'string') {
+    return looksLikeAssetPath(node) ? rewriteAssetExt(node) : node;
+  }
   if (Array.isArray(node)) return node.map(rewriteJsonRefs);
   if (typeof node === 'object') {
     const out = {};
